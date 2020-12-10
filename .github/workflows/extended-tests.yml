@@ -72,9 +72,27 @@ jobs:
       with:
         msystem: ${{ matrix.msystem }}
         update: true
+        install:
+          git
+          make
+          mingw-w64-${{ matrix.arch }}-gcc
+          mingw-w64-${{ matrix.arch }}-python-pip
 
     - uses: actions/download-artifact@v2
 
     - run: pacman -U --noconfirm --noprogressbar artifact/*.zst
 
     - run: verilator --help
+
+    - name: Install cocotb
+      run: |
+        pip3 install coverage xunitparser pytest pytest-cov
+        pip install --global-option build_ext --global-option --compiler=mingw32 https://github.com/cocotb/cocotb/archive/master.zip
+
+    - name: Test cocotb test_avalon_stream
+      run: |
+        git clone https://github.com/cocotb/cocotb
+        cd cocotb
+        export SIM=verilator
+        cd tests/test_cases/test_avalon_stream
+        make
